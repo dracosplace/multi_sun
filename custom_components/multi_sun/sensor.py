@@ -58,9 +58,9 @@ SUN_SCHEMA = vol.Schema(
         vol.Optional(ATTR_LAT): cv.small_float,
         vol.Optional(ATTR_LONG): cv.small_float,
         vol.Optional(ATTR_OFFSET_DATE_UNITS, default=DEFAULT_OFFSET_DATE_UNIT): vol.In(["months", "weeks", "days"]),
-        vol.Optional(ATTR_OFFSET_DATE_VALUE): cv.small_float,
+        vol.Optional(ATTR_OFFSET_DATE_VALUE): vol.All(vol.Coerce(int), vol.Range(min=0)),
         vol.Optional(ATTR_OFFSET_TIME_UNITS, default=DEFAULT_OFFSET_TIME_UNIT): vol.In(["hours", "minutes", "seconds"]),
-        vol.Optional(ATTR_OFFSET_TIME_VALUE): cv.small_float,
+        vol.Optional(ATTR_OFFSET_TIME_VALUE): vol.All(vol.Coerce(int), vol.Range(min=0)),
     }
 )
 
