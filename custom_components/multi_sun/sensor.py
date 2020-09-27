@@ -87,7 +87,7 @@ class MultiSunSensor(Entity):
     def __init__(self, current_sun: Dict[str, str]):
         super().__init__()
         self.current_sun = current_sun["name"]
-        self.attrs: Dict[str, Any] = {ATTR_PATH: self.current_sun}
+        self.attrs: Dict[str, Any] = {ATTR_CITY: self.current_sun}
         self._name = current_sun.get("name", self.current_sun)
         self._city = current_sun.get("city", self.current_sun)
         self._lat = current_sun.get(ATTR_LAT, self.current_sun)
