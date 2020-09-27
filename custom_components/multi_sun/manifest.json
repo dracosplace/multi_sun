@@ -1,0 +1,9 @@
+{
+  "codeowners": ["draco2003"],
+  "config_flow": false,
+  "dependencies": [],
+  "documentation": "https://github.com/dracosplace/multi_sun",
+  "domain": "multi_sun",
+  "name": "Multi-Sun",
+  "requirements": ["astral==2.2", "python-dateutil==2.8.1"]
+}
