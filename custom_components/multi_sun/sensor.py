@@ -37,6 +37,7 @@ from .const import (
     ATTR_SUNSET,
     ATTR_HOURS_IN_DAY,
     ATTR_TIMEZONE,
+    ATTR_REGION,
     ATTR_OFFSET_DATE_UNITS,
     ATTR_OFFSET_DATE_VALUE,
     ATTR_OFFSET_TIME_UNITS,
@@ -89,9 +90,9 @@ class MultiSunSensor(Entity):
     def __init__(self, current_sun: Dict[str, str]):
         super().__init__()
         self.current_sun = current_sun["name"]
-        self.attrs: Dict[str, Any] = {ATTR_CITY: self.current_sun}
         self._name = current_sun.get("name", self.current_sun)
-        self._city = current_sun.get("city", self.current_sun)   
+        self._city = current_sun.get("city", self.current_sun)
+        self.attrs: Dict[str, Any] = {ATTR_CITY: self._city}
         self._date_units = current_sun.get(ATTR_OFFSET_DATE_UNITS, self.current_sun)
         self._date_value = current_sun.get(ATTR_OFFSET_DATE_VALUE, self.current_sun)
         self._time_units = current_sun.get(ATTR_OFFSET_TIME_UNITS, self.current_sun)
@@ -136,7 +137,8 @@ class MultiSunSensor(Entity):
             relative_sunset = (s2["sunset"] + time_offset)
             diff = relative_sunset - relative_sunrise
             diff_hours = diff.seconds / 3600
-
+            self.attrs[ATTR_CITY] = city.name
+            self.attrs[ATTR_REGION] = city.region
             self.attrs[ATTR_TIMEZONE] = city.timezone
             self.attrs[ATTR_LAT] = city.latitude
             self.attrs[ATTR_LONG] = city.longitude
