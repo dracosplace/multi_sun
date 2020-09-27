@@ -138,8 +138,8 @@ class MultiSunSensor(Entity):
             diff_hours = diff.seconds / 3600
 
             self.attrs[ATTR_TIMEZONE] = city.timezone
-            self.attrs[ATTR_LAT] = " %.02f".format(city.latitude)
-            self.attrs[ATTR_LONG] = " %.02f".format(city.longitude)
+            self.attrs[ATTR_LAT] = city.latitude
+            self.attrs[ATTR_LONG] = city.longitude
             self.attrs[ATTR_SUNRISE] = str(relative_sunrise.strftime('%H:%M:%S'))
             self.attrs[ATTR_SUNSET] = str(relative_sunset.strftime('%H:%M:%S'))
             self.attrs[ATTR_HOURS_IN_DAY] = diff_hours
