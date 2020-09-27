@@ -35,6 +35,8 @@ from .const import (
     ATTR_LONG,
     ATTR_SUNRISE,
     ATTR_SUNSET,
+    ATTR_HOURS_IN_DAY,
+    ATTR_TIMEZONE,
     ATTR_OFFSET_DATE_UNITS,
     ATTR_OFFSET_DATE_VALUE,
     ATTR_OFFSET_TIME_UNITS,
@@ -55,8 +57,6 @@ SUN_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME): cv.string,
         vol.Optional(ATTR_CITY): cv.string,
-        vol.Optional(ATTR_LAT): cv.small_float,
-        vol.Optional(ATTR_LONG): cv.small_float,
         vol.Optional(ATTR_OFFSET_DATE_UNITS, default=DEFAULT_OFFSET_DATE_UNIT): vol.In(["months", "weeks", "days"]),
         vol.Optional(ATTR_OFFSET_DATE_VALUE): vol.All(vol.Coerce(int), vol.Range(min=0)),
         vol.Optional(ATTR_OFFSET_TIME_UNITS, default=DEFAULT_OFFSET_TIME_UNIT): vol.In(["hours", "minutes", "seconds"]),
@@ -91,9 +91,7 @@ class MultiSunSensor(Entity):
         self.current_sun = current_sun["name"]
         self.attrs: Dict[str, Any] = {ATTR_CITY: self.current_sun}
         self._name = current_sun.get("name", self.current_sun)
-        self._city = current_sun.get("city", self.current_sun)
-        self._lat = current_sun.get(ATTR_LAT, self.current_sun)
-        self._long = current_sun.get(ATTR_LONG, self.current_sun)        
+        self._city = current_sun.get("city", self.current_sun)   
         self._date_units = current_sun.get(ATTR_OFFSET_DATE_UNITS, self.current_sun)
         self._date_value = current_sun.get(ATTR_OFFSET_DATE_VALUE, self.current_sun)
         self._time_units = current_sun.get(ATTR_OFFSET_TIME_UNITS, self.current_sun)
@@ -133,8 +131,18 @@ class MultiSunSensor(Entity):
             city = a[city_name]
             s2 = city.sun(date=date_offset, local=False)
             time_offset = relativedelta(**{self._time_units: self._time_value})
-            self.attrs[ATTR_SUNRISE] = s2["sunrise"] + time_offset
-            self.attrs[ATTR_SUNSET] = s2["sunset"] + time_offset
+
+            relative_sunrise = (s2["sunrise"] + time_offset)
+            relative_sunset = (s2["sunset"] + time_offset)
+            diff = relative_sunset - relative_sunrise
+            diff_hours = diff.seconds / 3600
+
+            self.attrs[ATTR_TIMEZONE] = city.timezone
+            self.attrs[ATTR_LAT] = " %.02f".format(city.latitude)
+            self.attrs[ATTR_LONG] = " %.02f".format(city.longitude)
+            self.attrs[ATTR_SUNRISE] = str(relative_sunrise.strftime('%H:%M:%S'))
+            self.attrs[ATTR_SUNSET] = str(relative_sunset.strftime('%H:%M:%S'))
+            self.attrs[ATTR_HOURS_IN_DAY] = diff_hours
             self._available = True
         except (ClientError, gidgethub.GitHubException):
             self._available = False
