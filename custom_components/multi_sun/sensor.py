@@ -119,12 +119,12 @@ class MultiSunSensor(Entity):
         try:
             #repo_url = f"/repos/{self.repo}"
             #repo_data = await self.github.getitem(repo_url)
-            date_offset = date.today() + relativedelta(self._date_units=self._date_value)
+            date_offset = date.today() + relativedelta(**{self._date_units: self._date_value})
             city = lookup(self._city, database())
             #sixmonthDay = six_months.day
             #sixmonthMonth = six_months.month
             s2 = sun(city.observer, date=date_offset)
-            time_offset = relativedelta(self._time_units=self._time_value)
+            time_offset = relativedelta(**{self._time_units: self._time_value})
             #fivehourshiftsunrise = s2["sunrise"] + relativedelta(hours=+7) 
             #fivehourshiftsunset = s2["sunset"] + relativedelta(hours=+7)
             #diff = fivehourshiftsunset - fivehourshiftsunrise
