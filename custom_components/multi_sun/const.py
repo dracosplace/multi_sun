@@ -2,6 +2,8 @@ DOMAIN = "multi_sun"
 
 ATTR_SUNS = "suns"
 ATTR_CITY = "city"
+ATTR_LAT = "latitude"
+ATTR_LONG = "longitude"
 ATTR_OFFSET_DATE_UNITS = "days_offset"
 ATTR_OFFSET_DATE_VALUE = "days_offset_value"
 ATTR_OFFSET_TIME_UNITS = "time_offset"

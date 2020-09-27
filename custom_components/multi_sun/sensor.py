@@ -1,9 +1,10 @@
 """MultiSun sensor platform."""
 import logging
 import re
-from astral import LocationInfo
-from astral.geocoder import database, lookup
-from astral.sun import sun
+
+from astral import Astral
+from dateutil.relativedelta import relativedelta
+
 from datetime import timedelta, datetime, date
 from dateutil.relativedelta import relativedelta
 from typing import Any, Callable, Dict, Optional
@@ -30,6 +31,8 @@ from homeassistant.helpers.typing import (
 from .const import (
     ATTR_SUNS,
     ATTR_CITY,
+    ATTR_LAT,
+    ATTR_LONG,
     ATTR_OFFSET_DATE_UNITS,
     ATTR_OFFSET_DATE_VALUE,
     ATTR_OFFSET_TIME_UNITS,
@@ -49,7 +52,9 @@ CONF_SUNS = "suns"
 SUN_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME): cv.string,
-        vol.Required(ATTR_CITY): cv.string, 
+        vol.Optional(ATTR_CITY): cv.string,
+        vol.Optional(ATTR_LAT): cv.small_float,
+        vol.Optional(ATTR_LONG): cv.small_float,
         vol.Optional(ATTR_OFFSET_DATE_UNITS, default=DEFAULT_OFFSET_DATE_UNIT): vol.In(["months", "weeks", "days"]),
         vol.Optional(ATTR_OFFSET_DATE_VALUE): cv.small_float,
         vol.Optional(ATTR_OFFSET_TIME_UNITS, default=DEFAULT_OFFSET_TIME_UNIT): vol.In(["hours", "minutes", "seconds"]),
@@ -85,6 +90,8 @@ class MultiSunSensor(Entity):
         self.attrs: Dict[str, Any] = {ATTR_PATH: self.current_sun}
         self._name = current_sun.get("name", self.current_sun)
         self._city = current_sun.get("city", self.current_sun)
+        self._lat = current_sun.get(ATTR_LAT, self.current_sun)
+        self._long = current_sun.get(ATTR_LONG, self.current_sun)        
         self._date_units = current_sun.get(ATTR_OFFSET_DATE_UNITS, self.current_sun)
         self._date_value = current_sun.get(ATTR_OFFSET_DATE_VALUE, self.current_sun)
         self._time_units = current_sun.get(ATTR_OFFSET_TIME_UNITS, self.current_sun)
@@ -117,21 +124,15 @@ class MultiSunSensor(Entity):
 
     async def async_update(self):
         try:
-            #repo_url = f"/repos/{self.repo}"
-            #repo_data = await self.github.getitem(repo_url)
             date_offset = date.today() + relativedelta(**{self._date_units: self._date_value})
-            city = lookup(self._city, database())
-            #sixmonthDay = six_months.day
-            #sixmonthMonth = six_months.month
-            s2 = sun(city.observer, date=date_offset)
+            city_name = self._city
+            a = Astral()
+            a.solar_depression = 'civil'
+            city = a[city_name]
+            s2 = city.sun(date=date_offset, local=False)
             time_offset = relativedelta(**{self._time_units: self._time_value})
-            #fivehourshiftsunrise = s2["sunrise"] + relativedelta(hours=+7) 
-            #fivehourshiftsunset = s2["sunset"] + relativedelta(hours=+7)
-            #diff = fivehourshiftsunset - fivehourshiftsunrise
-            #diff_hours = diff.seconds / 3600
             self.attrs[ATTR_SUNRISE] = s2["sunrise"] + time_offset
-            self.attrs[ATTR_SUNSET] = s2["sunset"] + time_offset            
-
+            self.attrs[ATTR_SUNSET] = s2["sunset"] + time_offset
             self._available = True
         except (ClientError, gidgethub.GitHubException):
             self._available = False
